@@ -43,8 +43,6 @@ dispatch_semaphore_signal(lock);
 /**多少组文件 - 默认120*/
 @property (nonatomic, assign) NSInteger fileNum;
 
-+ (instancetype)shared;
-
 - (void)fire;
 
 @end

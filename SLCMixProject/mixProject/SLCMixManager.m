@@ -16,14 +16,11 @@
 @property (nonatomic, copy) NSString *bodyString; //body字符串
 @property (nonatomic, copy) NSString * tailString; //tail字符串
 @property (nonatomic, copy) NSString *defaultFullPath; //默认全路径 - 桌面
+@property (nonatomic, strong) NSMutableArray <NSString *>* classArray; //classArray
 
 @end
 
 @implementation SLCMixManager
-
-+ (instancetype)shared {
-    return [[self alloc] init];
-}
 
 - (instancetype)init {
     if (self = [super init]) {
@@ -31,6 +28,7 @@
         self.fileName = @"mixProject";
         self.fullPath = [self defaultFullPath];
         self.fileHeader = @"SLC";
+        self.classArray = [NSMutableArray array];
     }
     return self;
 }
@@ -65,9 +63,8 @@
     BOOL isFileExists = [fileManager fileExistsAtPath:[NSString stringWithFormat:@"%@.h",filePath]];
     if (isFileExists) return; //文件已存在,立即停止
     
-    NSString *propertyString = @"/**文件夹路径*/\n@property (nonatomic, copy) NSString * fullPath;";
-    NSString *methodString = @"+ (instancetype)shared;\n/**调用所有方法 - (模拟调用,fire完所有局部对象会立即被释放)*/\n- (void)fire;";
-    NSString *hString = [NSString stringWithFormat:@"\n\n\n\n\n#import <Foundation/Foundation.h>\n\n\n\n@interface %@ : NSObject\n%@\n%@\n@end",fileName,propertyString,methodString]; //.h文件内容
+    NSString *methodString = @"/**调用所有方法 - (模拟调用,fire完所有局部对象会立即被释放)*/\n- (void)fire;";
+    NSString *hString = [NSString stringWithFormat:@"\n\n\n\n\n#import <Foundation/Foundation.h>\n\n\n\n@interface %@ : NSObject\n%@\n@end",fileName,methodString]; //.h文件内容
     NSString *mString = [self createBulletsM:fileName methodString:methodString]; //.m文件内容
     
     
@@ -82,17 +79,21 @@
 
 - (NSString *)createBulletsM:(NSString *)fileName
                 methodString:(NSString *)method {
-    NSString *bulletsM = [NSString stringWithFormat:@"\n\n\n\n\n#import \"%@.h\"\n#import <objc/runtime.h>\n@interface %@()\n@property (nonatomic, copy) NSString * homeString;\n@end\n\n\n@implementation %@\n",fileName,fileName,fileName];
     
-    NSString *methodShared = @"\n+ (instancetype)shared\n{\n    return [[self alloc] init];\n}\n"; //shared方法
+    NSString *bulletsM = [NSString stringWithFormat:@"\n\n\n\n\n#import \"%@.h\"\n#import <objc/runtime.h>\n@interface %@()\n@property (nonatomic, strong) NSArray <NSString *>* classArray;\n@end\n\n\n@implementation %@\n",fileName,fileName,fileName];
     
-    bulletsM = [bulletsM stringByAppendingString:[NSString stringWithFormat:@"%@",methodShared]];
+    NSString *classString = @"@[";
+    for (NSInteger i = 0; i < self.fileNum; i ++) {
+        NSString *aClass = self.classArray[i];
+        classString = [classString stringByAppendingString:[NSString stringWithFormat:@"@\"%@\",",aClass]];
+    }
+    classString = [classString stringByAppendingString:@"]"];
     
-    NSString *methodHome = [NSString stringWithFormat:@"\n- (NSString *)homeString {\n    return @\"%@/Desktop/\";\n}\n",NSHomeDirectory()];
+    NSString *methodClass = [NSString stringWithFormat:@"- (NSArray <NSString *>*)classArray {\n    if (!_classArray) {\n     _classArray = %@;\n    }\n    return _classArray;\n}",classString];
     
-    bulletsM = [bulletsM stringByAppendingString:[NSString stringWithFormat:@"%@",methodHome]];
+      bulletsM = [bulletsM stringByAppendingString:[NSString stringWithFormat:@"%@",methodClass]];
     
-    NSString *methodFire = @"\n- (void)fire\n{\n    NSFileManager *fileManager = [NSFileManager defaultManager];\n    NSArray *fileList = [fileManager contentsOfDirectoryAtPath:[NSString stringWithFormat:@\"%@/%@\",self.homeString,self.fullPath] error:nil];\n     @autoreleasepool {\n      NSMutableArray *classList = [NSMutableArray array];\n      for (NSString *file in fileList) {\n       if ([file hasSuffix:@\".h\"] && ![file containsString:@\"Bullets\"]) {\n        NSString *className = [self removeLastOneChar:file];\n        [classList addObject:className];\n      }\n}\n      for (NSString *className in classList) {\n       Class aClass = NSClassFromString(className);\n       NSObject *object = [aClass new];\n       NSLog(@\"===生成的对象是%@\",object);\n       [self getAllMethods:aClass];\n     }\n      }\n}\n"; //fire方法
+    NSString *methodFire = @"\n- (void)fire{\n    @autoreleasepool {\n     for (NSString *className in self.classArray) {\n      Class aClass = NSClassFromString(className);\n      NSObject *object = [aClass new];\n      NSLog(@\"===生成的对象是%@\",object);\n      [self getAllMethods:aClass];\n    }\n      }}"; //fire方法
     
      bulletsM = [bulletsM stringByAppendingString:[NSString stringWithFormat:@"%@",methodFire]];
     
@@ -122,8 +123,10 @@
 
 - (void)createFile {
     NSFileManager *fileManager = [NSFileManager defaultManager];
+    
     NSString *file = [NSString stringWithFormat:@"%@%@%@",self.fileHeader,self.bodyString,self.tailString];
     NSString *filePath = [self.fullPath stringByAppendingPathComponent:file];
+    [self.classArray addObject:file];
     
     BOOL isFileExists = [fileManager fileExistsAtPath:[NSString stringWithFormat:@"%@.h",filePath]];
     if (isFileExists) return; //文件已存在,立即停止

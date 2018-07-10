@@ -12,7 +12,7 @@
 
 int main(int argc, const char * argv[]) {
     @autoreleasepool {
-        SLCMixManager *mix = [SLCMixManager shared];
+        SLCMixManager *mix = [SLCMixManager new];
 //        mix.fileHeader = @"SQZ"; //header
 //        mix.fileName = @"QuizProject"; //文件夹名称
 //        mix.fileNum = 150; //文件个数
