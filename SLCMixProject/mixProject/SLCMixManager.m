@@ -110,17 +110,6 @@
     return bulletsM;
 }
 
-- (BOOL)createDirectory {
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-    BOOL create = [fileManager createDirectoryAtPath:self.fullPath withIntermediateDirectories:YES attributes:nil error:nil];
-    if (create) {
-        NSLog(@"%@文件夹创建成功!",self.fullPath.lastPathComponent);
-    }else {
-        NSLog(@"文件夹创建失败,重名!");
-    }
-    return create;
-}
-
 - (void)createFile {
     NSFileManager *fileManager = [NSFileManager defaultManager];
     
@@ -230,28 +219,29 @@
     }
 }
 
+- (BOOL)createDirectory {
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    BOOL create = [fileManager createDirectoryAtPath:self.fullPath withIntermediateDirectories:YES attributes:nil error:nil];
+    if (create) {
+        NSLog(@"%@文件夹创建成功!",self.fullPath.lastPathComponent);
+    }else {
+        NSLog(@"文件夹创建失败,重名!");
+    }
+    return create;
+}
+
 - (NSString *)defaultFullPath {
     NSString *desk = [NSSearchPathForDirectoriesInDomains(NSDesktopDirectory, NSUserDomainMask, YES) objectAtIndex:0];
     return  [desk stringByAppendingPathComponent:self.fileName];
 }
 
 - (NSString *)bodyString {
-    NSString *body = nil;
-    if (self.mixedBody && self.mixedBody.length != 0) {
-        body = self.mixedBody;
-    }else {
-        body = bodyArray()[self.randomBodyNum];
-    }
+    NSString *body = self.mixedBody && self.mixedBody.length != 0 ? self.mixedBody : bodyArray()[self.randomBodyNum];
     return body;
 }
 
 - (NSString *)tailString {
-    NSString *tail = nil;
-    if (self.tailS && self.tailS.length != 0) {
-        tail = self.tailS;
-    }else {
-        tail = tailArray()[self.randomTailNum];
-    }
+    NSString *tail = self.tailS && self.tailS.length != 0 ? self.tailS : tailArray()[self.randomTailNum];
     return tail;
 }
 
@@ -272,12 +262,7 @@
 
 //删除最后一个字符
 - (NSString*)removeLastOneChar:(NSString*)origin {
-    NSString* cutted;
-    if([origin length] > 0){
-        cutted = [origin substringToIndex:([origin length]-1)];
-    }else{
-        cutted = origin;
-    }
+    NSString* cutted = [origin length] > 0 ? [origin substringToIndex:([origin length]-1)] : origin;
     return cutted;
 }
 
