@@ -82,25 +82,25 @@
 
 - (NSString *)createBulletsM:(NSString *)fileName
                 methodString:(NSString *)method {
-    NSString *bulletsM = [NSString stringWithFormat:@"\n\n\n\n\n#import \"%@.h\"\n#import <objc/runtime.h>\n@interface %@()\n@property (nonatomic, copy) NSString * homeString;\n@end\n\n\n@implementation %@",fileName,fileName,fileName];
+    NSString *bulletsM = [NSString stringWithFormat:@"\n\n\n\n\n#import \"%@.h\"\n#import <objc/runtime.h>\n@interface %@()\n@property (nonatomic, copy) NSString * homeString;\n@end\n\n\n@implementation %@\n",fileName,fileName,fileName];
     
-    NSString *methodShared = @"\n+ (instancetype)shared\n{\nreturn [[self alloc] init];\n}"; //shared方法
+    NSString *methodShared = @"\n+ (instancetype)shared\n{\n    return [[self alloc] init];\n}\n"; //shared方法
     
     bulletsM = [bulletsM stringByAppendingString:[NSString stringWithFormat:@"%@",methodShared]];
     
-    NSString *methodHome = [NSString stringWithFormat:@"\n- (NSString *)homeString {\nreturn @\"%@/Desktop/\";\n}",NSHomeDirectory()];
+    NSString *methodHome = [NSString stringWithFormat:@"\n- (NSString *)homeString {\n    return @\"%@/Desktop/\";\n}\n",NSHomeDirectory()];
     
     bulletsM = [bulletsM stringByAppendingString:[NSString stringWithFormat:@"%@",methodHome]];
     
-    NSString *methodFire = @"\n- (void)fire\n{\nNSFileManager *fileManager = [NSFileManager defaultManager];\nNSArray *fileList = [fileManager contentsOfDirectoryAtPath:[NSString stringWithFormat:@\"%@/%@\",self.homeString,self.fullPath] error:nil];\n@autoreleasepool {\nNSMutableArray *classList = [NSMutableArray array];\nfor (NSString *file in fileList) {\nif ([file hasSuffix:@\".h\"] && ![file containsString:@\"Bullets\"]) {\nNSString *className = [self removeLastOneChar:file];\n[classList addObject:className];\n}\n}\nfor (NSString *className in classList) {\nClass aClass = NSClassFromString(className);\nNSObject *object = [aClass new];\nNSLog(@\"===生成的对象是%@\",object);\n[self getAllMethods:aClass];\n}\n}\n}"; //fire方法
+    NSString *methodFire = @"\n- (void)fire\n{\n    NSFileManager *fileManager = [NSFileManager defaultManager];\n    NSArray *fileList = [fileManager contentsOfDirectoryAtPath:[NSString stringWithFormat:@\"%@/%@\",self.homeString,self.fullPath] error:nil];\n     @autoreleasepool {\n      NSMutableArray *classList = [NSMutableArray array];\n      for (NSString *file in fileList) {\n       if ([file hasSuffix:@\".h\"] && ![file containsString:@\"Bullets\"]) {\n        NSString *className = [self removeLastOneChar:file];\n        [classList addObject:className];\n      }\n}\n      for (NSString *className in classList) {\n       Class aClass = NSClassFromString(className);\n       NSObject *object = [aClass new];\n       NSLog(@\"===生成的对象是%@\",object);\n       [self getAllMethods:aClass];\n     }\n      }\n}\n"; //fire方法
     
      bulletsM = [bulletsM stringByAppendingString:[NSString stringWithFormat:@"%@",methodFire]];
     
-    NSString *methodLists = @"\n- (NSArray <NSString *>*)getAllMethods:(id)obj{\nunsigned int methodCount =0;\nMethod* methodList = class_copyMethodList([obj class],&methodCount);\nNSMutableArray *methodsArray = [NSMutableArray arrayWithCapacity:methodCount];\nfor(int i = 0; i < methodCount; i++){\nMethod temp = methodList[i];\nmethod_getImplementation(temp);\nmethod_getName(temp);\nconst char* name_s =sel_getName(method_getName(temp));\nint arguments = method_getNumberOfArguments(temp);\nconst char* encoding =method_getTypeEncoding(temp);\nif (![[NSString stringWithUTF8String:name_s] containsString:@\"set\"]) {\n //不要setter\nNSLog(@\"方法名：%@,参数个数：%d,编码方式：%@\",[NSString stringWithUTF8String:name_s],arguments,[NSString stringWithUTF8String:encoding]);\n[methodsArray addObject:[NSString stringWithUTF8String:name_s]];\n}\n}\nfree(methodList);\nreturn methodsArray;\n}\n";
+    NSString *methodLists = @"\n- (NSArray <NSString *>*)getAllMethods:(id)obj{\n    unsigned int methodCount =0;\n    Method* methodList = class_copyMethodList([obj class],&methodCount);\n    NSMutableArray *methodsArray = [NSMutableArray arrayWithCapacity:methodCount];\n    for(int i = 0; i < methodCount; i++){\n     Method temp = methodList[i];\n     method_getImplementation(temp);\n     method_getName(temp);\nconst char* name_s =sel_getName(method_getName(temp));\n     int arguments = method_getNumberOfArguments(temp);\n     const char* encoding =method_getTypeEncoding(temp);\n     if (![[NSString stringWithUTF8String:name_s] containsString:@\"set\"]) {\n //不要setter\n       NSLog(@\"方法名：%@,参数个数：%d,编码方式：%@\",[NSString stringWithUTF8String:name_s],arguments,[NSString stringWithUTF8String:encoding]);\n       [methodsArray addObject:[NSString stringWithUTF8String:name_s]];\n    }\n     }\n     free(methodList);\n    return methodsArray;\n}\n";
     
     bulletsM = [bulletsM stringByAppendingString:[NSString stringWithFormat:@"%@",methodLists]];
     
-    NSString *methodRemove = @"\n- (NSString*)removeLastOneChar:(NSString*)origin{\nNSString* cutted;\nif([origin length] > 0){\ncutted = [origin substringToIndex:([origin length]-2)];\n}else{\ncutted = origin;\n}\nreturn cutted;\n}\n";
+    NSString *methodRemove = @"\n- (NSString*)removeLastOneChar:(NSString*)origin{\n    NSString* cutted;\n    if([origin length] > 0){\n     cutted = [origin substringToIndex:([origin length]-2)];\n      }else{\n      cutted = origin;\n     }\n    return cutted;\n}\n";
     
     bulletsM = [bulletsM stringByAppendingString:[NSString stringWithFormat:@"%@",methodRemove]];
     
