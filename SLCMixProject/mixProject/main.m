@@ -27,7 +27,6 @@ int main(int argc, const char * argv[]) {
 //        mix.childMethodNum = 10;
 //        [mix fireOnChild];
 
-        
     }
     return 0;
 }

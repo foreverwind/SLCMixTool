@@ -44,8 +44,9 @@ dispatch_semaphore_signal(lock);
 /**多少组文件 - 默认120*/
 @property (nonatomic, assign) NSInteger fileNum;
 
-#pragma mark ---<只对fireOnChild有效>---
 
+
+#pragma mark ---<只对fireOnChild有效>---
 /**
  * 默认不处理包含@".xcassets"、@".xcworkspace"、@".xcodeproj"、@".framework"、@".lproj"、@"main"、@"AppDelegate"、@".plist"、@".json"、@".zip"、@".storyboard"、@"Podfile"、@"Pods"、@".zip"、@"README"、@".git"、 @".gitignore"、@".DS_Store"、@".png"、@".jpg"、@".data"、@".bin"、@".mko"、@".txt"、@".mp4"、@".pch"、@".mov" 如有其它可更改和添加.
  */
