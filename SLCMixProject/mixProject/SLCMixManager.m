@@ -33,12 +33,14 @@
     return self;
 }
 
+#pragma mark ------<fireOnBorn>-----
+
 - (void)setFileName:(NSString *)fileName {
     _fileName = fileName;
     self.fullPath = [self defaultFullPath];
 }
 
-- (void)fire {
+- (void)fireOnBorn {
     
     BOOL isCreateDirectory = [self createDirectory];
     dispatch_semaphore_t semaphore = GCD_Semaphore(1);
@@ -131,6 +133,8 @@
         }
         
         for (NSString *method in methodArray) {
+            if ([mString containsString:method]) continue; //如果有,跳过
+            
             mString = [mString stringByAppendingString:[NSString stringWithFormat:@"\n\n%@",[self removeLastOneChar:method]]];
             mString = [mString stringByAppendingString:[NSString stringWithFormat:@"\n{\n      for (NSInteger i = 0; i < 3; i++) {\n        NSString *str = @\"func name = %@\";\n        [str stringByAppendingString:@\"time is 3\"];\n       }\n}\n",method]];
         }
@@ -180,11 +184,9 @@
 //随机方法
 - (void)randomMethod:(void(^)(NSArray <NSString *>*methodArray))handle {
     NSUInteger randomNum = 1 + arc4random() % 6;
-    NSString *method = nil;
     NSMutableArray *array = [NSMutableArray array];
     for (NSInteger i = 0; i < randomNum; i ++) {
         NSString *methodString = [self randomPerMethod];
-        if ([method containsString:methodString]) continue; //如果有,跳过
         [array addObject:methodString];
     }
     if (handle) handle(array);
@@ -265,5 +267,167 @@
     NSString* cutted = [origin length] > 0 ? [origin substringToIndex:([origin length]-1)] : origin;
     return cutted;
 }
+
+
+#pragma mark ------<fireOnChild>------
+
+- (void)fireOnChild {
+    NSString *directory = [self fileExist];
+    if (!directory || directory.length == 0) {
+        NSLog(@"error:目录不存在");
+        return;
+    }else {
+        [self forwardAllFiles:directory handle:^(NSString *dir) {
+            if (self.contaisArray && self.contaisArray.count != 0) { //指定
+                for (NSString *string in self.contaisArray) {
+                    if ([dir containsString:string]) {
+                         [self handlePathWithDirectory:dir];
+                    }
+                }
+            }else { //不指定
+                [self handlePathWithDirectory:dir];
+            }
+        }];
+    }
+}
+
+
+- (void)forwardAllFiles:(NSString *)directory
+                 handle:(void(^)(NSString *dir))handle {
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSDirectoryEnumerator *dirEnumrator = [fileManager enumeratorAtPath:directory];
+    
+    while ((directory = [dirEnumrator nextObject]) != nil) {
+        
+        if (![directory containsString:@"."]) continue;
+        if (![directory containsString:@"/"]) continue;
+        if ([directory containsString:@".xcassets"]) continue;
+        if ([directory containsString:@".xcworkspace"]) continue;
+        if ([directory containsString:@".xcodeproj"]) continue;
+        if ([directory containsString:@".framework"]) continue;
+        if ([directory containsString:@".lproj"]) continue;
+        if ([directory containsString:@"main"]) continue;
+        if ([directory containsString:@"AppDelegate"]) continue;
+        if ([directory containsString:@".plist"]) continue;
+        if ([directory containsString:@".json"]) continue;
+        if ([directory containsString:@".zip"]) continue;
+        if ([directory containsString:@".storyboard"]) continue;
+        if ([directory containsString:@"Podfile"]) continue;
+        if ([directory containsString:@"Pods"]) continue;
+        if ([directory containsString:@".zip"]) continue;
+        if ([directory containsString:@"README"]) continue;
+        if ([directory containsString:@".git"]) continue;
+        if ([directory containsString:@".gitignore"]) continue;
+        if ([directory containsString:@".DS_Store"]) continue;
+        if ([directory containsString:@".png"]) continue;
+        if ([directory containsString:@".jpg"]) continue;
+        if ([directory containsString:@".data"]) continue;
+        if ([directory containsString:@".bin"]) continue;
+        if ([directory containsString:@".mko"]) continue;
+        if ([directory containsString:@".txt"]) continue;
+        if ([directory containsString:@".mp4"]) continue;
+        if ([directory containsString:@".pch"]) continue;
+        if ([directory containsString:@".mov"]) continue;
+        
+        if (handle) handle(directory);
+    }
+
+}
+
+- (void)handlePathWithDirectory:(NSString *)directory {
+    if ([directory containsString:@".h"]) return; //去掉.h
+    
+    NSString *fileMName = [directory lastPathComponent];
+    NSString *fileHName = [[self removeLastOneChar:fileMName] stringByAppendingString:@"h"];
+    
+   __block NSString *hPath = @"\n";
+    NSString *mPath = [NSString stringWithFormat:@"%@/%@",self.childFullPath,directory];
+   
+    NSString *fullPath = [self fileExist] ?:nil;
+    [self forwardAllFiles:fullPath handle:^(NSString *dir) {
+        if ([dir containsString:fileHName]) {
+            hPath = [NSString stringWithFormat:@"%@/%@",self.childFullPath,dir];
+        }
+    }];
+    
+    void(^handle)(NSArray <NSString *>*methodArray) = ^(NSArray <NSString *>*methodArray){
+        [self HfileHandleWithPath:hPath methodArray:methodArray];
+    };
+        [self MfileHandleWithPath:mPath handle:handle];
+    
+    NSLog(@"%@写入成功\n%@写入成功",fileMName,fileHName);
+    
+}
+
+- (void)HfileHandleWithPath:(NSString *)path
+                methodArray:(NSArray <NSString *>*)array {
+    NSFileHandle *writeHandle = [NSFileHandle fileHandleForWritingAtPath:path]; //写入
+    NSFileHandle *readHandle = [NSFileHandle fileHandleForReadingAtPath:path]; //读取
+    
+    NSData *readData = [readHandle readDataToEndOfFile]; //读取所有内容
+    NSString *readString = [[NSString alloc] initWithData:readData encoding:NSUTF8StringEncoding]; //文件原内容
+    
+     NSInteger end = [writeHandle seekToEndOfFile];
+    
+    NSInteger num = self.childTailPosition != 0 ? self.childTailPosition : 5;
+    [writeHandle seekToFileOffset:end - num];
+    
+    NSString *hString = @"\n";
+    for (NSString *method in array) {
+        if ([readString containsString:method]) continue; //原文件有,跳过
+        hString = [hString stringByAppendingString:[NSString stringWithFormat:@"\n%@\n",method]];
+    }
+    hString = [hString stringByAppendingString:@"\n@end"];
+    
+    NSData *data = [hString dataUsingEncoding:NSUTF8StringEncoding];
+    [writeHandle writeData:data]; //写入数据
+    
+    [readHandle closeFile]; //关闭读
+    [writeHandle closeFile]; //关闭写
+}
+
+- (void)MfileHandleWithPath:(NSString *)path
+                     handle:(void(^)(NSArray <NSString *>*methodArray))handle {
+    
+    NSFileHandle *writeHandle = [NSFileHandle fileHandleForWritingAtPath:path]; //写入
+    NSFileHandle *readHandle = [NSFileHandle fileHandleForReadingAtPath:path]; //读取
+    
+    NSData *readData = [readHandle readDataToEndOfFile]; //读取所有内容
+    NSString *readString = [[NSString alloc] initWithData:readData encoding:NSUTF8StringEncoding]; //文件原内容
+    
+    NSInteger end = [writeHandle seekToEndOfFile];
+    NSInteger num = self.childTailPosition != 0 ? self.childTailPosition : 5;
+    [writeHandle seekToFileOffset:end - num];
+
+    NSUInteger randomNum = self.childMethodNum != 0 ? self.childMethodNum : 1 + arc4random() % 6;
+    NSString * mString = @"\n";
+    NSMutableArray *methodArray = [NSMutableArray array];
+    for (NSInteger i = 0; i < randomNum; i ++) {
+        NSString *methodString = [self randomPerMethod];
+        if ([readString containsString:methodString]) continue; //原文件如果有,跳过
+        if ([mString containsString:methodString]) continue; //新生成的如果有,跳过
+        [methodArray addObject:methodString];
+        
+        mString = [mString stringByAppendingString:[NSString stringWithFormat:@"\n\n%@",[self removeLastOneChar:methodString]]];
+        mString = [mString stringByAppendingString:[NSString stringWithFormat:@"\n{\n      for (NSInteger i = 0; i < 3; i++) {\n        NSString *str = @\"func name = %@\";\n        [str stringByAppendingString:@\"time is 3\"];\n       }\n}\n",methodString]];
+    }
+
+    mString = [mString stringByAppendingString:@"\n\n@end"];
+    NSData *data = [mString dataUsingEncoding:NSUTF8StringEncoding];
+    [writeHandle writeData:data]; //写入数据
+    
+    [readHandle closeFile]; //关闭读
+    [writeHandle closeFile]; //关闭写
+    
+    if (handle) handle(methodArray);
+}
+
+//不存在返回空
+- (NSString *)fileExist {
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSString *backPath = [fileManager fileExistsAtPath:self.childFullPath] ? self.childFullPath : nil;
+    return backPath;
+}
+
 
 @end

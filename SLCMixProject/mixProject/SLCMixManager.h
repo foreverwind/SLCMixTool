@@ -30,6 +30,7 @@ dispatch_semaphore_signal(lock);
 
 @interface SLCMixManager : NSObject
 
+#pragma mark ---<只对fireOnBorn有效>---
 /**header字符串 -默认SLC*/
 @property (nonatomic, copy) NSString * fileHeader;
 /**body字符串 - 不给随机*/
@@ -43,6 +44,25 @@ dispatch_semaphore_signal(lock);
 /**多少组文件 - 默认120*/
 @property (nonatomic, assign) NSInteger fileNum;
 
-- (void)fire;
+#pragma mark ---<只对fireOnChild有效>---
 
+/**
+ * 默认不处理包含@".xcassets"、@".xcworkspace"、@".xcodeproj"、@".framework"、@".lproj"、@"main"、@"AppDelegate"、@".plist"、@".json"、@".zip"、@".storyboard"、@"Podfile"、@"Pods"、@".zip"、@"README"、@".git"、 @".gitignore"、@".DS_Store"、@".png"、@".jpg"、@".data"、@".bin"、@".mko"、@".txt"、@".mp4"、@".pch"、@".mov" 如有其它可更改和添加.
+ */
+
+/**文件路径*/
+@property (nonatomic, copy) NSString * childFullPath;
+/**需要生成的方法个数 - 不指定随机(1 - 6)*/
+@property (nonatomic, assign) NSUInteger childMethodNum;
+/**距离最末端@end位置处添加 - 一个数代表一个字母 - 不设置默认在最结尾处*/
+@property (nonatomic, assign) NSUInteger childTailPosition;
+/**指定的包含某些字符串的特殊类 - 不设不处理*/
+@property (nonatomic, strong) NSArray <NSString *>* contaisArray;
+
+#pragma mark ---<调用方法>---
+
+/**生成垃圾文件和函数*/
+- (void)fireOnBorn;
+/**在已有文件生成垃圾函数*/
+- (void)fireOnChild;
 @end
