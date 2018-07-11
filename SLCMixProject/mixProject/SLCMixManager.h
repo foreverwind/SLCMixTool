@@ -54,7 +54,7 @@ dispatch_semaphore_signal(lock);
 @property (nonatomic, copy) NSString * childFullPath;
 /**需要生成的方法个数 - 不指定随机(1 - 6)*/
 @property (nonatomic, assign) NSUInteger childMethodNum;
-/**距离最末端@end位置处添加 - 一个数代表一个字母 - 不设置默认在最结尾处*/
+/**距离最末端@end位置处添加 - 一个数代表一个字母 - 不设置默认在最结尾处(@end上边)*/
 @property (nonatomic, assign) NSUInteger childTailPosition;
 /**指定的包含某些字符串的特殊类 - 不设不处理*/
 @property (nonatomic, strong) NSArray <NSString *>* contaisArray;

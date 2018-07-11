@@ -15,17 +15,17 @@ int main(int argc, const char * argv[]) {
         
         
         SLCMixManager *mix = [SLCMixManager new];
-        mix.fileHeader = @"SQZ"; //header
-        mix.fileName = @"QuizProject"; //文件夹名称
-        mix.fileNum = 150; //文件个数
+//        mix.fileHeader = @"SQZ"; //header
+//        mix.fileName = @"QuizProject"; //文件夹名称
+//        mix.fileNum = 150; //文件个数
         [mix fireOnBorn];
         
         
 //        SLCMixManager *mix = [SLCMixManager new];
-        mix.childFullPath = @"/Users/weikunchao/Desktop/aa";
-        mix.contaisArray = @[@"SLCmixLayout"];
-        mix.childMethodNum = 10;
-        [mix fireOnChild];
+//        mix.childFullPath = @"/Users/weikunchao/Desktop/aa";
+//        mix.contaisArray = @[@"SLCmixLayout"];
+//        mix.childMethodNum = 10;
+//        [mix fireOnChild];
 
         
     }
