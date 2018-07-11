@@ -63,8 +63,8 @@
     BOOL isFileExists = [fileManager fileExistsAtPath:[NSString stringWithFormat:@"%@.h",filePath]];
     if (isFileExists) return; //文件已存在,立即停止
     
-    NSString *methodString = @"/**调用所有方法 - (模拟调用,fire完所有局部对象会立即被释放)*/\n- (void)fire;";
-    NSString *hString = [NSString stringWithFormat:@"\n\n\n\n\n#import <Foundation/Foundation.h>\n\n\n\n@interface %@ : NSObject\n%@\n@end",fileName,methodString]; //.h文件内容
+    NSString *methodString = @"/**调用所有方法 - (模拟调用,fire完所有局部对象会立即被释放)*/\n+ (void)fire;";
+    NSString *hString = [NSString stringWithFormat:@"\n\n\n\n\n#import <Foundation/Foundation.h>\n\n\n\n@interface %@ : NSObject\n\n\n%@\n@end",fileName,methodString]; //.h文件内容
     NSString *mString = [self createBulletsM:fileName methodString:methodString]; //.m文件内容
     
     
@@ -93,15 +93,15 @@
     
       bulletsM = [bulletsM stringByAppendingString:[NSString stringWithFormat:@"%@",methodClass]];
     
-    NSString *methodFire = @"\n- (void)fire{\n    @autoreleasepool {\n     for (NSString *className in self.classArray) {\n      Class aClass = NSClassFromString(className);\n      NSObject *object = [aClass new];\n      NSLog(@\"===生成的对象是%@\",object);\n      [self getAllMethods:aClass];\n    }\n      }}"; //fire方法
+    NSString *methodFire = [NSString stringWithFormat:@"\n+ (void)fire{\n    @autoreleasepool {\n     %@ *bullets = [%@ new];\n       for (NSString *className in bullets.classArray) {\n      Class aClass = NSClassFromString(className);\n      NSObject *object = [aClass new];\n      NSLog(@\"===生成了%@对象\");\n      [self getAllMethods:object];\n    }\n      }}",fileName,fileName,fileName]; //fire方法
     
      bulletsM = [bulletsM stringByAppendingString:[NSString stringWithFormat:@"%@",methodFire]];
     
-    NSString *methodLists = @"\n- (NSArray <NSString *>*)getAllMethods:(id)obj{\n    unsigned int methodCount =0;\n    Method* methodList = class_copyMethodList([obj class],&methodCount);\n    NSMutableArray *methodsArray = [NSMutableArray arrayWithCapacity:methodCount];\n    for(int i = 0; i < methodCount; i++){\n     Method temp = methodList[i];\n     method_getImplementation(temp);\n     method_getName(temp);\nconst char* name_s =sel_getName(method_getName(temp));\n     int arguments = method_getNumberOfArguments(temp);\n     const char* encoding =method_getTypeEncoding(temp);\n     if (![[NSString stringWithUTF8String:name_s] containsString:@\"set\"]) {\n //不要setter\n       NSLog(@\"方法名：%@,参数个数：%d,编码方式：%@\",[NSString stringWithUTF8String:name_s],arguments,[NSString stringWithUTF8String:encoding]);\n       [methodsArray addObject:[NSString stringWithUTF8String:name_s]];\n    }\n     }\n     free(methodList);\n    return methodsArray;\n}\n";
+    NSString *methodLists = @"\n+ (NSArray <NSString *>*)getAllMethods:(id)obj{\n    unsigned int methodCount =0;\n    Method* methodList = class_copyMethodList([obj class],&methodCount);\n    NSMutableArray *methodsArray = [NSMutableArray arrayWithCapacity:methodCount];\n    for(int i = 0; i < methodCount; i++){\n     Method temp = methodList[i];\n     method_getImplementation(temp);\n     method_getName(temp);\nconst char* name_s =sel_getName(method_getName(temp));\n     int arguments = method_getNumberOfArguments(temp);\n     const char* encoding =method_getTypeEncoding(temp);\n     if (![[NSString stringWithUTF8String:name_s] containsString:@\"set\"]) {\n //不要setter\n       NSLog(@\"方法名：%@,参数个数：%d,编码方式：%@\",[NSString stringWithUTF8String:name_s],arguments,[NSString stringWithUTF8String:encoding]);\n       [methodsArray addObject:[NSString stringWithUTF8String:name_s]];\n    }\n     }\n     free(methodList);\n    return methodsArray;\n}\n";
     
     bulletsM = [bulletsM stringByAppendingString:[NSString stringWithFormat:@"%@",methodLists]];
     
-    NSString *methodRemove = @"\n- (NSString*)removeLastOneChar:(NSString*)origin{\n    NSString* cutted;\n    if([origin length] > 0){\n     cutted = [origin substringToIndex:([origin length]-2)];\n      }else{\n      cutted = origin;\n     }\n    return cutted;\n}\n";
+    NSString *methodRemove = @"\n+ (NSString*)removeLastOneChar:(NSString*)origin{\n    NSString* cutted = [origin length] > 0 ? [origin substringToIndex:([origin length]-2)] : origin;\n    return cutted;\n}\n";
     
     bulletsM = [bulletsM stringByAppendingString:[NSString stringWithFormat:@"%@",methodRemove]];
     

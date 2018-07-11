@@ -21,6 +21,5 @@ command + r 运行,文件夹(不设置的情况下，默认在桌面)生成.
 
 所有的类会生成一个对象,并且简单操作其内的属性和方法,执行完成后会立即被释放.
 ```
-SQZBullets *buleets = [SQZBullets new];
-[buleets fire];
+[SQZBullets fire];
 ```
