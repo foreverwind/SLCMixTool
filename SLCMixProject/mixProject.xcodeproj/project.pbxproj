@@ -29,6 +29,7 @@
 		91EE37C520F3A97900BD8AA4 /* SLCMixManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SLCMixManager.h; sourceTree = "<group>"; };
 		91EE37C620F3A97900BD8AA4 /* SLCMixManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SLCMixManager.m; sourceTree = "<group>"; };
 		91EE37CA20F3C67500BD8AA4 /* SLCDataManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SLCDataManager.h; sourceTree = "<group>"; };
+		F832BE0520FF1E1C00DAD8DD /* Bullets */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Bullets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -64,6 +65,7 @@
 				91EE37CA20F3C67500BD8AA4 /* SLCDataManager.h */,
 				91EE37C520F3A97900BD8AA4 /* SLCMixManager.h */,
 				91EE37C620F3A97900BD8AA4 /* SLCMixManager.m */,
+				F832BE0520FF1E1C00DAD8DD /* Bullets */,
 				91EE35D920F3625800BD8AA4 /* main.m */,
 			);
 			path = mixProject;
